@@ -1,0 +1,31 @@
+{
+  "kind": "captured synthetic execution projection",
+  "command": "python -m blueprint_team \"Build a greeting tool\" --output ./demo-output",
+  "input_example": "blueprint_team/demo.py",
+  "observed_output": {
+    "artifacts": [
+      "project_summary.md",
+      "folder_map.md",
+      "dependency_map.md",
+      "file_prompts.json",
+      "validation_report.md",
+      "final_summary.md"
+    ],
+    "file_prompts": {
+      "files": [
+        {
+          "path": "app/core.py",
+          "prompt": "Implement the clarified domain behavior."
+        },
+        {
+          "path": "tests/test_core.py",
+          "prompt": "Test the public domain behavior offline."
+        }
+      ]
+    },
+    "validation_report": "# Validation\n\nThe two files agree on names, dependency direction, and offline scope.\n",
+    "final_summary": "# Handoff\n\nThe project blueprint is internally consistent and ready for implementation review.\n"
+  },
+  "projection_note": "Selected fields from a successful local run. Machine paths, temporary identifiers and execution timestamps are omitted. Re-run the linked example for fresh evidence.",
+  "scope": "The bundled deterministic runner simulates the workflow stages. This capture is not an evaluation of model-generated software."
+}
