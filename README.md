@@ -1,31 +1,60 @@
 # Project Blueprint Agent Team
 
-A six-stage recipe for turning a project request into an inspectable design brief. Each named role receives the original request and earlier outputs; the final stage writes per-file implementation prompts.
+An experiment in handing one request through six fixed roles, from clarification to a per-file implementation brief. Each role sees the original request and every earlier role's text. The output is a **plan for implementation**, not working software.
 
-## Try it
+The earlier experiment used AutoGen and particular model configurations. This public continuation keeps its role sequence behind one injectable Python callable; the included runner is deterministic and offline. [Origin](ORIGIN.md)
 
-Python 3.11 or newer.
+## Follow the handoffs
+
+Python 3.11 or later, from this checkout:
 
 ```sh
 python -m pip install -e .
+python -m examples.walkthrough
 python -m blueprint_team "Build a greeting tool" --output ./demo-output
+python -m pip install pytest
+python -m pytest -q
 ```
 
-The offline demonstration writes six role artifacts and prompts for `app/core.py` and `tests/test_core.py`. Those `.py` files contain English implementation instructions. They are inputs to a future coding step, not executable generated software. The command reports six review artifacts.
+[The captured run](examples/captured-result.json) includes each call's instruction and context keys, all six returned artifacts, and both implementation prompts. The CLI saves those artifacts.
 
-## How it works
+| Role | Adds to the next role's context |
+| --- | --- |
+| Prompt interpreter | `project_summary.md` |
+| System architect | `folder_map.md` |
+| Dependency mapper | `dependency_map.md` |
+| File prompt designer | `file_prompts.json` |
+| Validator | `validation_report.md` |
+| Spec writer | `final_summary.md` |
 
-Separate role outputs make a proposed design traceable before code creation begins. Read the [mechanism and implementation notes](docs/MECHANISM.md) for the specific boundaries and source links.
+The final role sees the request plus five prior artifacts. The file prompt designer supplies the paths/prompts; the spec writer adds a summary. Files are written only after all six calls return.
 
-## Scope
+**Files under `demo-output/project/`, including `app/core.py`, contain English implementation prompts. Do not run them as Python.** The paths describe intended future files.
 
-No experiment here establishes that six roles improve model quality. JSON/path failures may leave earlier artifacts, so use a fresh output directory. The injected runner is the extension point; a live model provider is not included.
+## Reuse the coordinator
 
-## Verify
+```python
+from blueprint_team import BlueprintTeam
+from blueprint_team.demo import deterministic_runner
 
-`python -m pytest` runs the behavior tests (install `pytest` first). The runnable example above provides a separate first-use check.
+calls = []
+def runner(role, instruction, context):
+    calls.append((role, tuple(context)))
+    return deterministic_runner(role, instruction, context)
 
-MIT licensed; see [LICENSE.md](LICENSE.md). Origin and release boundaries are documented in [ORIGIN.md](ORIGIN.md) and [SECURITY.md](SECURITY.md).
-## Inspect the example result
+result = BlueprintTeam(runner).run("Describe a local greeting tool")
+assert len(calls) == 6
+assert "file_prompts.json" in result.outputs
+```
 
-Open the [saved synthetic result](examples/captured-result.json) alongside its [input and demonstration](blueprint_team/demo.py). The result is from the bundled synthetic example; local machine paths and temporary run identifiers are excluded from public projections.
+Replace `runner(role, instruction, context) -> str` with a trusted implementation. It must return nonempty text. The file-prompt role must return strict JSON shaped like `{"files": [{"path": "app/core.py", "prompt": "Implement ..."}]}`. [The demo runner](blueprint_team/demo.py) shows all response contracts.
+
+[core.py](blueprint_team/core.py) owns role order, context accumulation and output paths. “Validator” means another text-producing role, not independent software verification. Only the file-prompt envelope and destination paths receive structural checks.
+
+## Scope and next experiment
+
+There is no measured evidence here that six roles beat one good planning prompt. No code is generated or tested and no provider is bundled. A role exception stops `run_and_write` before output writing. Later parsing/writing failures can leave partial artifacts; use a new output directory to avoid overwriting earlier results.
+
+A useful next comparison would hold the request and evaluation criteria fixed, then compare a single-stage planner with this sequence.
+
+[Mechanism](docs/MECHANISM.md) · [Tests](tests/test_blueprint_team.py) · [Security](SECURITY.md) · [License](LICENSE.md)

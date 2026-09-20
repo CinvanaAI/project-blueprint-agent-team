@@ -1,31 +1,75 @@
 {
-  "kind": "captured synthetic execution projection",
-  "command": "python -m blueprint_team \"Build a greeting tool\" --output ./demo-output",
-  "input_example": "blueprint_team/demo.py",
-  "observed_output": {
-    "artifacts": [
-      "project_summary.md",
-      "folder_map.md",
-      "dependency_map.md",
-      "file_prompts.json",
-      "validation_report.md",
-      "final_summary.md"
-    ],
-    "file_prompts": {
-      "files": [
-        {
-          "path": "app/core.py",
-          "prompt": "Implement the clarified domain behavior."
-        },
-        {
-          "path": "tests/test_core.py",
-          "prompt": "Test the public domain behavior offline."
-        }
+  "request": "Build a greeting tool",
+  "calls": [
+    {
+      "role": "prompt_interpreter",
+      "instruction": "Clarify scope, features, constraints, and assumptions. Return a structured project summary.",
+      "context_keys": [
+        "original_prompt"
       ]
     },
-    "validation_report": "# Validation\n\nThe two files agree on names, dependency direction, and offline scope.\n",
-    "final_summary": "# Handoff\n\nThe project blueprint is internally consistent and ready for implementation review.\n"
+    {
+      "role": "system_architect",
+      "instruction": "Design a complete folder and file blueprint from the clarified summary.",
+      "context_keys": [
+        "original_prompt",
+        "project_summary.md"
+      ]
+    },
+    {
+      "role": "dependency_mapper",
+      "instruction": "Explain dependencies and interactions among the proposed modules.",
+      "context_keys": [
+        "original_prompt",
+        "project_summary.md",
+        "folder_map.md"
+      ]
+    },
+    {
+      "role": "file_prompt_designer",
+      "instruction": "Return strict JSON with a files array. Each item needs a relative path and implementation prompt.",
+      "context_keys": [
+        "original_prompt",
+        "project_summary.md",
+        "folder_map.md",
+        "dependency_map.md"
+      ]
+    },
+    {
+      "role": "validator",
+      "instruction": "Check names, references, dependencies, completeness, and alignment with the original request.",
+      "context_keys": [
+        "original_prompt",
+        "project_summary.md",
+        "folder_map.md",
+        "dependency_map.md",
+        "file_prompts.json"
+      ]
+    },
+    {
+      "role": "spec_writer",
+      "instruction": "Compile the validated result into a concise downstream handoff without claiming code was built.",
+      "context_keys": [
+        "original_prompt",
+        "project_summary.md",
+        "folder_map.md",
+        "dependency_map.md",
+        "file_prompts.json",
+        "validation_report.md"
+      ]
+    }
+  ],
+  "role_artifacts": {
+    "project_summary.md": "# Clarified project\n\nBuild: Build a greeting tool\n\nConstraint: keep the example offline and testable.",
+    "folder_map.md": "# Folder map\n\n- `app/core.py`: domain behavior\n- `tests/test_core.py`: offline verification",
+    "dependency_map.md": "# Dependencies\n\n`tests/test_core.py` imports `app/core.py`; the domain has no external service dependency.",
+    "file_prompts.json": "{\n  \"files\": [\n    {\n      \"path\": \"app/core.py\",\n      \"prompt\": \"Implement the clarified domain behavior.\"\n    },\n    {\n      \"path\": \"tests/test_core.py\",\n      \"prompt\": \"Test the public domain behavior offline.\"\n    }\n  ]\n}",
+    "validation_report.md": "# Validation\n\nThe two files agree on names, dependency direction, and offline scope.",
+    "final_summary.md": "# Handoff\n\nThe project blueprint is internally consistent and ready for implementation review."
   },
-  "projection_note": "Selected fields from a successful local run. Machine paths, temporary identifiers and execution timestamps are omitted. Re-run the linked example for fresh evidence.",
-  "scope": "The bundled deterministic runner simulates the workflow stages. This capture is not an evaluation of model-generated software."
+  "implementation_prompts": {
+    "project/app/core.py": "Implement the clarified domain behavior.\n",
+    "project/tests/test_core.py": "Test the public domain behavior offline.\n"
+  },
+  "software_implemented": false
 }
